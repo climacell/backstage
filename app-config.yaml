@@ -53,6 +53,13 @@ newrelic:
 lighthouse:
   baseUrl: http://localhost:3003
 
+scaffolder:
+  github:
+    token:
+      $secret:
+        env: GITHUB_ACCESS_TOKEN
+    visibility: public # or 'internal' or 'private'
+
 catalog:
   rules:
     - allow: [Component, API, Group, Template, Location]
@@ -62,9 +69,17 @@ catalog:
         $secret:
           env: GITHUB_PRIVATE_TOKEN
     githubApi:
-      privateToken:
-        $secret:
-          env: GITHUB_PRIVATE_TOKEN
+      providers:
+        - target: https://github.com
+          token:
+            $secret:
+              env: GITHUB_PRIVATE_TOKEN
+        # Example for how to add your GitHub Enterprise instance:
+        # - target: https://ghe.example.net
+        #   apiBaseUrl: https://ghe.example.net/api/v3
+        #   token:
+        #     $secret:
+        #       env: GHE_PRIVATE_TOKEN
     bitbucketApi:
       username:
         $secret:
