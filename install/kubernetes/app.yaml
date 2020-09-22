@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backstage
+  namespace: cc-backstage
   labels:
     app: backstage
     component: frontend
@@ -19,8 +20,23 @@ spec:
     spec:
       containers:
         - name: app
-          image: spotify/backstage:latest
-          imagePullPolicy: IfNotPresent
+          image: gcr.io/resolute-ascent-161700/cc-backstage:latest
+          imagePullPolicy: Always
+          env:
+            - name: AUTH_GITHUB_CLIENT_ID
+              value: x
+            - name: AUTH_GITHUB_CLIENT_SECRET
+              value: x
+            - name: AUTH_OAUTH2_CLIENT_ID
+              value: x
+            - name: AUTH_OAUTH2_CLIENT_SECRET
+              value: x
+            - name: ROLLBAR_ACCOUNT_TOKEN
+              value: x
+            - name: SENTRY_TOKEN
+              value: x
+            - name: LOG_LEVEL
+              value: debug 
           ports:
             - containerPort: 80
               name: app

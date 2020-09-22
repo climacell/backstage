@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backstage-backend
+  namespace: cc-backstage
   labels:
     app: backstage
     component: backend
@@ -19,8 +20,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: spotify/backstage-backend:latest
-          imagePullPolicy: IfNotPresent
+          image: gcr.io/resolute-ascent-161700/cc-backstage-backend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 7000
               name: backend
