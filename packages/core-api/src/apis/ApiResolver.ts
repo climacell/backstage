@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import crypto from 'crypto';
 import { ApiRef } from './ApiRef';
 import {
   ApiHolder,
@@ -24,6 +25,26 @@ import {
 
 export class ApiResolver implements ApiHolder {
   private readonly apis = new Map<AnyApiRef, unknown>();
+
+  /**
+   * Compares two API references in a timing-safe manner to prevent timing attacks.
+   */
+  private static timingSafeApiRefEqual(a: AnyApiRef, b: AnyApiRef): boolean {
+    const aId = a.id;
+    const bId = b.id;
+    
+    // Ensure both strings are the same length by padding with spaces
+    const maxLength = Math.max(aId.length, bId.length);
+    
+    // Pad strings to same length using traditional approach for compatibility
+    const aPadded = aId + ' '.repeat(Math.max(0, maxLength - aId.length));
+    const bPadded = bId + ' '.repeat(Math.max(0, maxLength - bId.length));
+    
+    const aBuffer = (Buffer as any).from(aPadded, 'utf8');
+    const bBuffer = (Buffer as any).from(bPadded, 'utf8');
+    
+    return crypto.timingSafeEqual(aBuffer, bBuffer);
+  }
 
   /**
    * Validate factories by making sure that each of the apis can be created
@@ -45,7 +66,7 @@ export class ApiResolver implements ApiHolder {
         }
 
         for (const dep of Object.values(factory.deps)) {
-          if (dep === api) {
+          if (ApiResolver.timingSafeApiRefEqual(dep, api)) {
             throw new Error(`Circular dependency of api factory for ${api}`);
           }
           if (!allDeps.has(dep)) {
@@ -74,7 +95,7 @@ export class ApiResolver implements ApiHolder {
       return undefined;
     }
 
-    if (loading.includes(factory.api)) {
+    if (loading.some(ref => ApiResolver.timingSafeApiRefEqual(ref, factory.api))) {
       throw new Error(`Circular dependency of api factory for ${factory.api}`);
     }
 

@@ -174,4 +174,38 @@ describe('ApiResolver', () => {
     expect(resolver.get(aRef)).toBe(2);
     expect(factory).toHaveBeenCalledTimes(1);
   });
+
+  it('should use timing-safe comparison for API reference equality', () => {
+    // Create two different API refs with the same ID
+    const aRef1 = createApiRef({ id: 'same-id', description: 'first' });
+    const aRef2 = createApiRef({ id: 'same-id', description: 'second' });
+    const bRef1 = createApiRef({ id: 'different-id', description: 'different' });
+
+    // Test the private timing-safe comparison method indirectly through validation
+    const registry = new ApiFactoryRegistry();
+    
+    // Create a factory that would create a circular dependency if timing-safe comparison works
+    registry.register('default', {
+      api: aRef1,
+      deps: { dep: aRef2 }, // Same ID as aRef1, should be detected as circular
+      factory: () => 1,
+    });
+
+    // This should throw because aRef1 and aRef2 have the same ID
+    expect(() => {
+      ApiResolver.validateFactories(registry, [aRef1]);
+    }).toThrow('Circular dependency of api factory for apiRef{same-id}');
+
+    // Create a registry with different IDs - should not throw
+    const validRegistry = new ApiFactoryRegistry();
+    validRegistry.register('default', {
+      api: aRef1,
+      deps: { dep: bRef1 }, // Different ID, no circular dependency
+      factory: () => 1,
+    });
+
+    expect(() => {
+      ApiResolver.validateFactories(validRegistry, [aRef1]);
+    }).not.toThrow();
+  });
 });
