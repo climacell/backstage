@@ -93,7 +93,7 @@
     "webpack": "^4.41.6",
     "webpack-dev-server": "^3.10.3",
     "webpack-node-externals": "^2.5.0",
-    "yaml": "^1.10.0",
+    "yaml": "^2.3.1",
     "yml-loader": "^2.1.0",
     "yn": "^4.0.0"
   },
